@@ -4,67 +4,60 @@ import {
   Post,
   Header,
   Query,
-  Headers,
-  HttpException,
-  HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { GalleryService } from './gallery.service';
+import { AdminGuard } from '../common/guards/admin.guard';
+import { GetGalleryDto } from './dto/get-gallery.dto';
 
 @Controller('api/gallery')
 export class GalleryController {
-  constructor(private readonly galleryService: GalleryService) {}
+  constructor(private readonly galleryService: GalleryService) { }
 
   @Get()
   @Header('Content-Type', 'application/json')
-  async getGallery(@Query('category') category?: string) {
-    return this.galleryService.getGallery(category);
+  async getGallery(@Query() query: GetGalleryDto) {
+    return this.galleryService.getGallery(query.category);
   }
 
   @Post('clear-cache')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
-  async clearCache(
-    @Query('category') category?: string,
-    @Headers('x-revalidate-token') token?: string,
-  ) {
-    const expectedToken = process.env.GALLERY_REVALIDATE_TOKEN;
-    if (expectedToken && token !== expectedToken) {
-      throw new HttpException('Não autorizado', HttpStatus.UNAUTHORIZED);
-    }
-
-    return this.galleryService.clearCache(category);
+  async clearCache(@Query() query: GetGalleryDto) {
+    return this.galleryService.clearCache(query.category);
   }
 
   @Get('test')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
   async testConnection() {
     return this.galleryService.testSupabaseConnection();
   }
 
   @Get('structure')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
   async getStructure() {
     return this.galleryService.getBucketStructure();
   }
 
   @Get('debug')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
-  async debug(
-    @Query('category') category?: string,
-    @Query('refresh') refresh?: string,
-  ) {
+  async debug(@Query() query: GetGalleryDto) {
     try {
-      if (refresh === 'true') {
-        await this.galleryService.clearCache(category);
+      if (query.refresh === 'true') {
+        await this.galleryService.clearCache(query.category);
       }
 
-      const gallery = await this.galleryService.getGallery(category);
+      const gallery = await this.galleryService.getGallery(query.category);
       const connection = await this.galleryService.testSupabaseConnection();
       const structure = await this.galleryService.getBucketStructure();
 
       return {
         success: true,
         timestamp: new Date().toISOString(),
-        category: category || 'Todos',
+        category: query.category || 'Todos',
         gallery: {
           itemCount: gallery.items.length,
           sampleItems: gallery.items.slice(0, 3).map(item => ({

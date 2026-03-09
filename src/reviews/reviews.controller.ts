@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Header } from '@nestjs/common';
+import { Controller, Get, Post, Header, UseGuards } from '@nestjs/common';
 import { ReviewsService, ReviewsResponse } from './reviews.service';
+import { AdminGuard } from '../common/guards/admin.guard';
 
 @Controller('api/reviews')
 export class ReviewsController {
-  constructor(private readonly reviewsService: ReviewsService) {}
+  constructor(private readonly reviewsService: ReviewsService) { }
 
   @Get()
   @Header('Content-Type', 'application/json')
@@ -12,33 +13,37 @@ export class ReviewsController {
   }
 
   @Post('clear-cache')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
   async clearCache() {
     return this.reviewsService.clearCache();
   }
 
   @Get('redis-status')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
   async getRedisStatus() {
     return this.reviewsService.getRedisStatus();
   }
 
   @Get('keys')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
   async getAllKeys() {
     return this.reviewsService.getAllKeys();
   }
 
   @Get('test')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
   async testConnection() {
     try {
       // Testa a conexão com Redis
       const redisStatus = await this.reviewsService.getRedisStatus();
-      
+
       // Testa a API do Google
       const reviews = await this.reviewsService.getReviews();
-      
+
       return {
         success: true,
         timestamp: new Date().toISOString(),
@@ -65,15 +70,16 @@ export class ReviewsController {
   }
 
   @Get('force-refresh')
+  @UseGuards(AdminGuard)
   @Header('Content-Type', 'application/json')
   async forceRefresh() {
     try {
       // Limpa o cache primeiro
       await this.reviewsService.clearCache();
-      
+
       // Busca novos dados
       const reviews = await this.reviewsService.getReviews();
-      
+
       return {
         success: true,
         message: 'Cache forçado a atualizar',
