@@ -6,6 +6,7 @@ import {
   IsString,
   ValidateNested,
   MaxLength,
+  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -58,13 +59,29 @@ export class SendEmailDto {
   })
   type: EmailType;
 
+  /**
+   * Nome: obrigatório se for currículo. Opcional para contato (feedback anônimo).
+   */
+  @ValidateIf((o) => o.type === EmailType.RESUME || (o.name !== undefined && o.name !== ''))
   @IsString()
-  @IsNotEmpty({ message: 'O nome é obrigatório.' })
-  name: string;
+  @IsNotEmpty({ message: 'O nome é obrigatório para envio de currículos.' })
+  name?: string;
 
+  /**
+   * Email: obrigatório se for currículo. Opcional para contato (feedback anônimo).
+   */
+  @ValidateIf((o) => o.type === EmailType.RESUME || (o.email !== undefined && o.email !== ''))
   @IsEmail({}, { message: 'Informe um e-mail válido.' })
-  @IsNotEmpty({ message: 'O e-mail é obrigatório.' })
-  email: string;
+  @IsNotEmpty({ message: 'O e-mail é obrigatório para envio de currículos.' })
+  email?: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'O telefone é obrigatório.' })
+  phone: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'A área de interesse é obrigatória.' })
+  area: string;
 
   @IsString()
   @IsNotEmpty({ message: 'O assunto é obrigatório.' })
@@ -75,9 +92,10 @@ export class SendEmailDto {
   message: string;
 
   /**
-   * Anexo opcional. Quando presente, deve conter filename, content (Base64) e type (MIME).
+   * Anexo obrigatório para currículos.
    */
-  @IsOptional()
+  @ValidateIf((o) => o.type === EmailType.RESUME)
+  @IsNotEmpty({ message: 'O currículo deve ser enviado em anexo.' })
   @ValidateNested()
   @Type(() => AttachmentDto)
   attachment?: AttachmentDto;

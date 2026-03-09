@@ -3,12 +3,16 @@
  *
  * @param name    - Nome do candidato
  * @param email   - E-mail do candidato
+ * @param phone   - Telefone do candidato
+ * @param area    - Área de interesse do candidato
  * @param message - Mensagem de apresentação
  * @returns String HTML pronta para ser enviada via Resend
  */
 export function buildResumeTemplate(
   name: string,
   email: string,
+  phone: string,
+  area: string,
   message: string,
 ): string {
   return `
@@ -77,6 +81,36 @@ export function buildResumeTemplate(
                       <a href="mailto:${escapeHtml(email)}"
                          style="color: #16A34A; text-decoration: none; font-weight: 600;">
                         ${escapeHtml(email)}
+                      </a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f9fafb;
+                             border-left: 4px solid #16A34A; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #6B7280;
+                               text-transform: uppercase; letter-spacing: 0.05em;">Telefone</p>
+                    <p style="margin: 0; font-size: 16px; color: #111827;">
+                      <a href="mailto:${escapeHtml(phone)}"
+                         style="color: #16A34A; text-decoration: none; font-weight: 600;">
+                        ${escapeHtml(phone)}
+                      </a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f9fafb;
+                             border-left: 4px solid #16A34A; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #6B7280;
+                               text-transform: uppercase; letter-spacing: 0.05em;">Área de interesse</p>
+                    <p style="margin: 0; font-size: 16px; color: #111827;">
+                      <a href="mailto:${escapeHtml(area)}"
+                         style="color: #16A34A; text-decoration: none; font-weight: 600;">
+                        ${escapeHtml(area)}
                       </a>
                     </p>
                   </td>

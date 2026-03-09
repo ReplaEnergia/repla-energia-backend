@@ -60,7 +60,7 @@ export class MailService {
    * 4. Retorna resposta padronizada de sucesso ou lança exceção
    */
   async sendEmail(dto: SendEmailDto): Promise<{ success: boolean; message: string }> {
-    const { type, name, email, subject, message, attachment } = dto;
+    const { type, name, email, subject, message, attachment, phone, area } = dto;
 
     // Validação do tamanho do anexo (10MB limite)
     if (attachment) {
@@ -68,7 +68,7 @@ export class MailService {
     }
 
     // Seleciona o template correto baseado no tipo de e-mail
-    const htmlTemplate = this.buildTemplate(type, { name, email, subject, message });
+    const htmlTemplate = this.buildTemplate(type, { name, email, subject, message, phone, area });
 
     // Seleciona o remetente apropriado de acordo com o tipo
     const fromSender = type === EmailType.RESUME ? this.fromResumeEmail : this.fromContactEmail;
@@ -94,7 +94,9 @@ export class MailService {
         throw new InternalServerErrorException('Erro ao enviar e-mail');
       }
 
-      this.logger.log(`E-mail do tipo "${type}" enviado com sucesso de: ${email}`);
+      this.logger.log(
+        `E-mail do tipo "${type}" enviado com sucesso de: ${email || 'Anônimo'}`,
+      );
       return { success: true, message: 'Email enviado com sucesso' };
     } catch (err) {
       // Re-lança erros HTTP do NestJS (BadRequest, etc.)
@@ -138,13 +140,19 @@ export class MailService {
    */
   private buildTemplate(
     type: EmailType,
-    data: { name: string; email: string; subject: string; message: string },
+    data: { name?: string; email?: string; subject: string; message: string; phone?: string; area?: string },
   ): string {
     switch (type) {
       case EmailType.CONTACT:
-        return buildContactTemplate(data.name, data.email, data.subject, data.message);
+        return buildContactTemplate(
+          data.name || 'Anônimo (Feedback)',
+          data.email || 'Não informado',
+          data.subject,
+          data.message,
+        );
       case EmailType.RESUME:
-        return buildResumeTemplate(data.name, data.email, data.message);
+        // No resume é obrigatório pelo DTO, mas garantimos strings válidas aqui.
+        return buildResumeTemplate(data.name || 'Candidato', data.email || 'Não informado', data.phone || 'Não informado', data.area || 'Não informado', data.message);
       default:
         // Proteção em runtime além da validação do DTO
         throw new BadRequestException('Tipo de e-mail inválido.');
