@@ -17,7 +17,7 @@ import { SendEmailDto } from './dto/send-email.dto';
  *
  * Rota: POST /mail/send
  */
-@Controller('mail')
+@Controller('api/mail')
 export class MailController {
   constructor(private readonly mailService: MailService) { }
 
