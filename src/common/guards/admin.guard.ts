@@ -19,13 +19,18 @@ export class AdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
 
-    // Suporta ambos os cabeçalhos para retrocompatibilidade
-    const token =
-      request.headers['x-api-key'] ||
-      request.headers['x-revalidate-token'];
-
-    // Determina o token esperado pela variável de ambiente
+    // 1. Verifica token administrativo (API Key manual)
+    const token = request.headers['x-api-key'] || request.headers['x-revalidate-token'];
     const expectedToken = process.env.ADMIN_API_KEY || process.env.GALLERY_REVALIDATE_TOKEN;
+
+    // 2. Verifica token de Cron da Vercel
+    const authHeader = request.headers['authorization'];
+    const cronSecret = process.env.CRON_SECRET;
+
+    // Se a requisição veio do Vercel Cron, está autorizada.
+    if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+      return true;
+    }
 
     if (!expectedToken) {
       // Se não há token configurado no ambiente, por segurança negamos acesso.
@@ -33,7 +38,7 @@ export class AdminGuard implements CanActivate {
     }
 
     if (token !== expectedToken) {
-      throw new UnauthorizedException('Token administrativo inválido ou ausente.');
+      throw new UnauthorizedException('Token administrativo ou Cron inválido ou ausente.');
     }
 
     return true;

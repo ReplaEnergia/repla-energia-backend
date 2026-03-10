@@ -76,9 +76,11 @@ export class SendEmailDto {
   email?: string;
 
   @IsString()
+  @IsNotEmpty({ message: 'O telefone é obrigatório.' })
   phone: string;
 
   @IsString()
+  @IsNotEmpty({ message: 'A área de interesse é obrigatória.' })
   area: string;
 
   @IsString()

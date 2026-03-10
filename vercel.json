@@ -11,5 +11,15 @@
       "src": "(.*)",
       "dest": "src/api/index.ts"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/reviews/force-refresh",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/gallery/debug?refresh=true",
+      "schedule": "30 3 * * *"
+    }
   ]
 }
